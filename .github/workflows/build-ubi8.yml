@@ -84,18 +84,17 @@ jobs:
       version: ${{ steps.set-version.outputs.version}}
 
      
-   build-image:
+   build-go:
     runs-on: ubuntu-latest
-    name: build-image
+    name: build-go
     needs: ["setup"]
     strategy:
       matrix:
         platform: ${{ fromJson(needs.setup.outputs.dist_matrix) }}
     env:
       REPOSITORY_NAME: ${{ needs.setup.outputs.repository_name }}
-      IMAGE_REPOSITORY: "${{ needs.setup.outputs.image_registry }}/${{ needs.setup.outputs.image_repository_name }}"
-      IMAGE_REGISTRY: ${{ needs.setup.outputs.image_registry }}
       VERSION: ${{ needs.setup.outputs.version }}
+      ARCHIVE: ${{ needs.setup.outputs.repository_name }}-${{ github.run_id }}-${{ github.run_number }}
     steps:
       - name: Set up Go 1.x
         uses: actions/setup-go@v1
@@ -123,7 +122,37 @@ jobs:
         env:
           GOOS: ${{ steps.setup-build-step.outputs.platform_os }}
           GOARCH: ${{ steps.setup-build-step.outputs.platform_arch }}
-        run: make build
+        run: make build      
+      - name: Archive go-platform binairies
+        env:
+          GOOS: ${{ steps.setup-build-step.outputs.platform_os }}
+          GOARCH: ${{ steps.setup-build-step.outputs.platform_arch }}
+        uses: actions/upload-artifact@v2
+        with:
+          name: ${{ env.ARCHIVE }}
+          path: |
+            _output/kube-rbac-proxy-${{ env.GOOS }}-${{ env.GOARCH }}
+          if-no-files-found: error
+          retention-days: 1
+          
+   build-image-multiarch:
+    runs-on: ubuntu-latest
+    name: build-image-multiarch
+    needs: ["setup", "build-go"]
+    env:
+      ARCHIVE: ${{ needs.setup.outputs.repository_name }}-${{ github.run_id }}-${{ github.run_number }}
+      IMAGE_REPOSITORY: "${{ needs.setup.outputs.image_registry }}/${{ needs.setup.outputs.image_repository_name }}"
+      IMAGE_REGISTRY: ${{ needs.setup.outputs.image_registry }}
+      REPOSITORY_NAME: ${{ needs.setup.outputs.repository_name }}
+      VERSION: ${{ needs.setup.outputs.version }}
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+      - name: Download go-build Archive
+        id: download-archive
+        uses: actions/download-artifact@v2
+        with:
+          name: ${{ env.ARCHIVE }}
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
       - name: Set up Docker Buildx
@@ -133,14 +162,14 @@ jobs:
         with:
           username: ${{ secrets.REGISTRY_USERNAME }}
           password: ${{ secrets.REGISTRY_PASSWORD }}
-          registry: ${{ env.IMAGE_REGISTRY }}     
+          registry: ${{ env.IMAGE_REGISTRY }}  
       - name: Build Image 
         uses: docker/build-push-action@v2
         with:
           build-args: |
-            BINARY="${{ env.REPOSITORY_NAME }}-${{ steps.setup-build-step.outputs.platform_os }}-${{ steps.setup-build-step.outputs.platform_arch }}"
+            BINARY=${{ env.REPOSITORY_NAME }}
           context: .
           file: ./.ci/Containerfile
-          platforms: ${{ matrix.platform }}
+          platforms: ${{ env.BUILD_PLATFORMS }}
           push: true
           tags: "${{ env.IMAGE_REPOSITORY }}:latest,${{ env.IMAGE_REPOSITORY }}:${{ env.VERSION }}"
