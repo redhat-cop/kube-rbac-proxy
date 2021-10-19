@@ -1,6 +1,11 @@
 FROM registry.access.redhat.com/ubi8/ubi-minimal
+ARG TARGETOS
+ARG TARGETARCH
+ARG ARCHIVE_PATH
+ARG BINARY
+
 WORKDIR /
-COPY _output/kube-rbac-proxy /usr/local/bin/kube-rbac-proxy
+COPY ${BINARY}-${TARGETOS}-${TARGETARCH} /usr/local/bin/${BINARY}
 EXPOSE 8080
 USER 65532:65532
 ENTRYPOINT ["/usr/local/bin/kube-rbac-proxy"]
