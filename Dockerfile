@@ -1,7 +1,9 @@
 ARG GOARCH=amd64
-FROM gcr.io/distroless/static:nonroot-$GOARCH
+ARG GOOS=linux
+ARG BASEIMAGE=gcr.io/distroless/static:nonroot-$GOARCH
+FROM $BASEIMAGE
 
-ARG BINARY=kube-rbac-proxy-linux-amd64
+ARG BINARY=kube-rbac-proxy-$GOOS-$GOARCH
 COPY _output/$BINARY /usr/local/bin/kube-rbac-proxy
 EXPOSE 8080
 USER 65532:65532

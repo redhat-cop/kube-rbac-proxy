@@ -5,19 +5,35 @@ Release shepherds are chosen on a voluntary basis.
 
 ## Release schedule
 
-| release series | date of release (year-month-day) | release shepherd                            |
-|----------------|----------------------------------|---------------------------------------------|
-| v0.12.0        | TBD                              | Krzysztof Ostrowski (GitHub: @ibihim)
-| v0.11.0        | 2021-08-02                       | Sergiusz Urbaniak (GitHub: @s-urbaniak)     |
-| v0.10.0        | 2021-05-07                       | Sergiusz Urbaniak (GitHub: @s-urbaniak)     |
-| v0.9.0         | 2021-04-27                       | Sergiusz Urbaniak (GitHub: @s-urbaniak)     |
-| v0.8.0         | 2020-11-03                       | Paweł Krupa (GitHub: @paulfantom)           |
-| v0.7.0         | 2020-09-15                       | Paweł Krupa (GitHub: @paulfantom)           |
-| v0.6.0         | 2020-06-11                       | Frederic Branczyk (GitHub: @brancz)         |
-| v0.5.0         | 2020-02-17                       | Frederic Branczyk (GitHub: @brancz)         |
-| v0.4.1         | 2019-01-23                       | Frederic Branczyk (GitHub: @brancz)         |
-| v0.4.0         | 2018-10-24                       | Frederic Branczyk (GitHub: @brancz)         |
-| v0.3.1         | 2018-06-20                       | Frederic Branczyk (GitHub: @brancz)         |
+| release series | date of release (year-month-day) | release shepherd                        |
+|----------------|----------------------------------|-----------------------------------------|
+| v0.20.0        | TBD                              | Krzysztof Ostrowski (GitHub: @ibihim)   |
+| v0.19.0        | 2025-02-14                       | Krzysztof Ostrowski (GitHub: @ibihim)   |
+| v0.18.2        | 2024-11-29                       | Anya Kramar (GitHub: @kramaranya)       |
+| v0.18.1        | 2024-08-30                       | Krzysztof Ostrowski (GitHub: @ibihim)   |
+| v0.18.0        | 2024-06-05                       | Krzysztof Ostrowski (GitHub: @ibihim)   |
+| v0.17.1        | 2024-05-07                       | Krzysztof Ostrowski (GitHub: @ibihim)   |
+| v0.17.0        | 2024-04-18                       | Krzysztof Ostrowski (GitHub: @ibihim)   |
+| v0.16.0        | 2024-02-08                       | Krzysztof Ostrowski (GitHub: @ibihim)   |
+| v0.15.0        | 2023-10-20                       | Krzysztof Ostrowski (GitHub: @ibihim)   |
+| v0.14.4        | 2023-10-16                       | Krzysztof Ostrowski (GitHub: @ibihim)   |
+| v0.14.3        | 2023-09-07                       | Krzysztof Ostrowski (GitHub: @ibihim)   |
+| v0.14.2        | 2023-06-05                       | Krzysztof Ostrowski (GitHub: @ibihim)   |
+| v0.14.1        | 2023-04-06                       | Krzysztof Ostrowski (GitHub: @ibihim)   |
+| v0.14.0        | 2022-12-15                       | Krzysztof Ostrowski (GitHub: @ibihim)   |
+| v0.13.1        | 2022-10-04                       | Krzysztof Ostrowski (GitHub: @ibihim)   |
+| v0.13.0        | 2022-06-29                       | Krzysztof Ostrowski (GitHub: @ibihim)   |
+| v0.12.0        | 2022-04-08                       | Sergiusz Urbaniak (GitHub: @s-urbaniak) |
+| v0.11.0        | 2021-08-02                       | Sergiusz Urbaniak (GitHub: @s-urbaniak) |
+| v0.10.0        | 2021-05-07                       | Sergiusz Urbaniak (GitHub: @s-urbaniak) |
+| v0.9.0         | 2021-04-27                       | Sergiusz Urbaniak (GitHub: @s-urbaniak) |
+| v0.8.0         | 2020-11-03                       | Paweł Krupa (GitHub: @paulfantom)       |
+| v0.7.0         | 2020-09-15                       | Paweł Krupa (GitHub: @paulfantom)       |
+| v0.6.0         | 2020-06-11                       | Frederic Branczyk (GitHub: @brancz)     |
+| v0.5.0         | 2020-02-17                       | Frederic Branczyk (GitHub: @brancz)     |
+| v0.4.1         | 2019-01-23                       | Frederic Branczyk (GitHub: @brancz)     |
+| v0.4.0         | 2018-10-24                       | Frederic Branczyk (GitHub: @brancz)     |
+| v0.3.1         | 2018-06-20                       | Frederic Branczyk (GitHub: @brancz)     |
 
 ## How to cut a new release
 
@@ -74,8 +90,8 @@ and the previous stable release is `2.16.0` we need to create a `release-2.17`
 branch. Note that all releases are handled in protected release branches, see
 the above `Branch management and versioning` section.
 
-Bump the version in the `VERSION` file and update `CHANGELOG.md`. Do this in a
-proper PR pointing to the release branch as this gives others the opportunity to
+Bump the version in the `VERSION`, update `CHANGELOG.md`, and modify version references in the example deployment manifests.
+Do this in a proper PR pointing to the release branch as this gives others the opportunity to
 chime in on the release in general and on the addition to the changelog in
 particular.
 
@@ -91,6 +107,8 @@ Entries in the `CHANGELOG.md` are meant to be in this order:
 * `[FEATURE]`
 * `[ENHANCEMENT]`
 * `[BUGFIX]`
+
+Submit a PR against the master branch titled "*: cut vx.y.z release ".
 
 ### 3. Draft the new release
 
@@ -128,4 +146,3 @@ to be pushed to Quay.io.
 
 If the release has happened in the latest release branch, merge the changes into
 main.
-

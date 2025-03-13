@@ -17,13 +17,16 @@ limitations under the License.
 package authn
 
 import (
+	"context"
 	"errors"
 	"net/http"
 	"time"
 
+	"k8s.io/apiserver/pkg/apis/apiserver"
 	"k8s.io/apiserver/pkg/authentication/authenticator"
 	"k8s.io/apiserver/pkg/authentication/authenticatorfactory"
 	"k8s.io/apiserver/pkg/server/dynamiccertificates"
+	"k8s.io/apiserver/pkg/server/options"
 	authenticationclient "k8s.io/client-go/kubernetes/typed/authentication/v1"
 )
 
@@ -32,8 +35,12 @@ type DelegatingAuthenticator struct {
 	requestAuthenticator authenticator.Request
 }
 
+var (
+	_ (authenticator.Request) = (*DelegatingAuthenticator)(nil)
+)
+
 // NewDelegatingAuthenticator creates an authenticator compatible with the kubelet's needs
-func NewDelegatingAuthenticator(client authenticationclient.TokenReviewInterface, authn *AuthnConfig) (*DelegatingAuthenticator, error) {
+func NewDelegatingAuthenticator(client authenticationclient.AuthenticationV1Interface, authn *AuthnConfig) (*DelegatingAuthenticator, error) {
 	if client == nil {
 		return nil, errors.New("tokenAccessReview client not provided, cannot use webhook authentication")
 	}
@@ -44,10 +51,14 @@ func NewDelegatingAuthenticator(client authenticationclient.TokenReviewInterface
 	)
 
 	authenticatorConfig := authenticatorfactory.DelegatingAuthenticatorConfig{
-		Anonymous:               false, // always require authentication
+		Anonymous: &apiserver.AnonymousAuthConfig{
+			Enabled: false, // always require authentication
+		},
+		// Better defaults would be here: apiserver/pkg/server/options/authentication.go.
 		CacheTTL:                2 * time.Minute,
 		TokenAccessReviewClient: client,
 		APIAudiences:            authenticator.Audiences(authn.Token.Audiences),
+		WebhookRetryBackoff:     options.DefaultAuthWebhookRetryBackoff(),
 	}
 
 	if len(authn.X509.ClientCAFile) > 0 {
@@ -70,15 +81,8 @@ func (a *DelegatingAuthenticator) AuthenticateRequest(req *http.Request) (*authe
 	return a.requestAuthenticator.AuthenticateRequest(req)
 }
 
-func (a *DelegatingAuthenticator) RunOnce() error {
+func (a *DelegatingAuthenticator) Run(ctx context.Context) {
 	if a.dynamicClientCA != nil {
-		return a.dynamicClientCA.RunOnce()
-	}
-	return nil
-}
-
-func (a *DelegatingAuthenticator) Run(workers int, stopCh <-chan struct{}) {
-	if a.dynamicClientCA != nil {
-		a.dynamicClientCA.Run(workers, stopCh)
+		a.dynamicClientCA.Run(ctx, 1)
 	}
 }

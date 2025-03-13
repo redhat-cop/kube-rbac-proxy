@@ -17,38 +17,72 @@ limitations under the License.
 package authn
 
 import (
+	"context"
+	"net/http"
+
+	"k8s.io/apiserver/pkg/apis/apiserver"
 	"k8s.io/apiserver/pkg/authentication/authenticator"
 	"k8s.io/apiserver/pkg/authentication/request/bearertoken"
+	"k8s.io/apiserver/pkg/server/dynamiccertificates"
 	"k8s.io/apiserver/plugin/pkg/authenticator/token/oidc"
 )
 
-// OIDCConfig represents configuration used for JWT request authentication
-type OIDCConfig struct {
-	IssuerURL            string
-	ClientID             string
-	CAFile               string
-	UsernameClaim        string
-	UsernamePrefix       string
-	GroupsClaim          string
-	GroupsPrefix         string
-	SupportedSigningAlgs []string
+type OIDCAuthenticator struct {
+	dynamicClientCA      *dynamiccertificates.DynamicFileCAContent
+	requestAuthenticator authenticator.Request
 }
 
+var (
+	_ (authenticator.Request) = (*OIDCAuthenticator)(nil)
+)
+
 // NewOIDCAuthenticator returns OIDC authenticator
-func NewOIDCAuthenticator(config *OIDCConfig) (authenticator.Request, error) {
-	tokenAuthenticator, err := oidc.New(oidc.Options{
-		IssuerURL:            config.IssuerURL,
-		ClientID:             config.ClientID,
-		CAFile:               config.CAFile,
-		UsernameClaim:        config.UsernameClaim,
-		UsernamePrefix:       config.UsernamePrefix,
-		GroupsClaim:          config.GroupsClaim,
-		GroupsPrefix:         config.GroupsPrefix,
+func NewOIDCAuthenticator(ctx context.Context, config *OIDCConfig) (*OIDCAuthenticator, error) {
+	var dynamicCA *dynamiccertificates.DynamicFileCAContent
+	if len(config.CAFile) > 0 { // if unset, the OIDC authenticator defaults to host's trust store
+		var err error
+		dynamicCA, err = dynamiccertificates.NewDynamicCAContentFromFile("oidc-ca", config.CAFile)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	tokenAuthenticator, err := oidc.New(ctx, oidc.Options{
+		JWTAuthenticator: apiserver.JWTAuthenticator{
+			Issuer: apiserver.Issuer{
+				URL:       config.IssuerURL,
+				Audiences: []string{config.ClientID},
+			},
+			ClaimMappings: apiserver.ClaimMappings{
+				Username: apiserver.PrefixedClaimOrExpression{
+					Prefix: &config.UsernamePrefix,
+					Claim:  config.UsernameClaim,
+				},
+				Groups: apiserver.PrefixedClaimOrExpression{
+					Prefix: &config.GroupsPrefix,
+					Claim:  config.GroupsClaim,
+				},
+			},
+		},
+		CAContentProvider:    dynamicCA,
 		SupportedSigningAlgs: config.SupportedSigningAlgs,
 	})
 	if err != nil {
 		return nil, err
 	}
 
-	return bearertoken.New(tokenAuthenticator), nil
+	return &OIDCAuthenticator{
+		dynamicClientCA:      dynamicCA,
+		requestAuthenticator: bearertoken.New(tokenAuthenticator),
+	}, nil
+}
+
+func (o *OIDCAuthenticator) AuthenticateRequest(req *http.Request) (*authenticator.Response, bool, error) {
+	return o.requestAuthenticator.AuthenticateRequest(req)
+}
+
+func (o *OIDCAuthenticator) Run(ctx context.Context) {
+	if o.dynamicClientCA != nil {
+		o.dynamicClientCA.Run(ctx, 1)
+	}
 }

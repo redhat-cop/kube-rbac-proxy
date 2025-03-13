@@ -22,7 +22,6 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"os"
 	"path"
@@ -212,7 +211,7 @@ func newSelfSignedCert(hostname string) stepFunc {
 }
 
 func doubleSymlinkCert(t *testing.T, s *scenario) {
-	name, err := ioutil.TempDir("", "keys")
+	name, err := os.MkdirTemp("", "keys")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -266,7 +265,7 @@ func swapCert(t *testing.T, s *scenario) {
 }
 
 func swapSymlink(t *testing.T, s *scenario) {
-	name, err := ioutil.TempDir("", "keys")
+	name, err := os.MkdirTemp("", "keys")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -311,7 +310,7 @@ func steps(gs ...stepFunc) stepFunc {
 }
 
 func writeTempFile(pattern string, data []byte) (string, error) {
-	f, err := ioutil.TempFile("", pattern)
+	f, err := os.CreateTemp("", pattern)
 	if err != nil {
 		return "", fmt.Errorf("error creating temp file: %v", err)
 	}
@@ -336,7 +335,8 @@ func writeTempFile(pattern string, data []byte) (string, error) {
 func poll(interval, timeout time.Duration, f func() error) error {
 	var lastErr error
 
-	err := wait.Poll(interval, timeout, func() (bool, error) {
+	ctx := context.Background()
+	err := wait.PollUntilContextTimeout(ctx, interval, timeout, true, func(_ context.Context) (bool, error) {
 		lastErr = f()
 
 		if lastErr != nil {
@@ -347,7 +347,7 @@ func poll(interval, timeout time.Duration, f func() error) error {
 		return true, nil
 	})
 
-	if err != nil && err == wait.ErrWaitTimeout && lastErr != nil {
+	if err != nil && wait.Interrupted(err) && lastErr != nil {
 		err = fmt.Errorf("%v: %v", err, lastErr)
 	}
 

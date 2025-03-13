@@ -1,3 +1,93 @@
+## 0.19.0 / 2025-02-14
+
+- [ENHANCEMENT] Bump deps
+- [ENHANCEMENT] OIDC authenticator defaults to using host's root CA pool if CA file is not provided
+
+## 0.18.2 / 2024-11-29
+
+- [BUGFIX] Mask tokens even in the high verbosity in logs
+- [ENHANCEMENT] Bump deps
+
+## 0.18.1 / 2024-06-05
+
+- [ENHANCEMENT] Bump deps, in particular go-jose and golang (->CVE) and k8s (v1.31)
+
+## 0.18.0 / 2024-06-05
+
+- [ENHANCEMENT] Bump deps, in particular otel (>CVE) and k8s (v1.30)
+- [ENHANCEMENT] Add OIDC username prefix, which was missing
+
+## 0.17.1 / 2024-05-07
+
+- [BUGFIX] make deprecated (usptream removed) flags behave like before
+
+## 0.17.0 / 2024-02-08
+
+- [ENHANCEMENT] add command-line args --kube-api-qps/--kube-api-burst
+- [ENHANCEMENT] Bump deps
+
+## 0.16.0 / 2024-02-08
+
+- [ENHANCEMENT] Bump dependencies and in particular to kubernetes to v1.28
+- [CHANGE] Due to the bump to k8s v1.28 some logging flags are disabled
+
+## 0.15.0 / 2023-10-20
+
+- [ENHANCEMENT] bump opentelemetry to fix CVE
+- [ENHANCEMENT] add option to disable HTTP/2: `--http2-disable` (default: `false`)
+- [ENHANCEMENT] add option to fine-tune HTTP/2:
+    - `--http2-max-size` (default: 256kb)
+    - `--http2-max-concurrent-streams` (default: 100)
+
+## 0.14.4 / 2023-10-16
+
+- [ENHANCEMENT] bump golang and x/net
+
+## 0.14.3 / 2023-09-07
+
+- [BUGFIX] `--version` returns now the proper kube-rbac-proxy version
+- [ENHANCEMENT] bump dependencies
+
+## 0.14.2 / 2023-06-05
+
+- [ENHANCEMENT] bump dependencies
+- [ENHANCEMENT] Makefile, Dockerfile to work better with different architectures
+
+## 0.14.1 / 2023-04-06
+
+- [ENHANCEMENT] bump dependencies
+
+## 0.14.0 / 2022-12-15
+
+* [ENHANCEMENT] `README.md` now contains information about the future outlook of the project wrt to deprecations, features and K8s Sig-Auth acceptance
+* [ENHANCEMENT] bump dependencies
+* [FEATURE] health endpoint `/healthz` offered on `--proxy-endpoints-port`
+* [FEATURE] `--upstream-client-cert-file` enables the kube-rbac-proxy client connecting to upstream to use TLS
+* [CHANGE] use cobra and usptream command machinery, introduces deprecation to some flags
+
+## 0.13.1 / 2022-10-04
+
+* [ENHANCEMENT] bump k8s to 1.25.2 #200 (contains fixes for CVEs)
+* [ENHANCEMENT] bump Go to 1.19.1 #178 (contains fixes for CVEs)
+* [ENHANCEMENT] bump golang.org/x/crypto due to CVE-2022-27191 #188
+* [CHANGE] add warning messages for features that will be removed
+
+## 0.13.0 / 2022-06-29
+
+* [ENHANCEMENT] bump k8s to 1.24.2 #178
+* [ENHANCEMENT] bump Go to 1.18.3 #178
+* [ENHANCEMENT] update README.md to be more accurate and up to date #178, #173
+* [ENHANCEMENT] check all headers for rewrites and create additional authz requests #171
+
+## 0.12.0 / 2022-04-08
+
+* [ENHANCEMENT] bump k8s to 1.23.5. #149, #155, #160
+* [ENHANCEMENT] add release documentation, #156
+* [ENHANCEMENT] use supported apiVersion for deployment and authorization. #150
+* [BUGFIX] ppc64le image build which in turn fixed multi-arch build. #147
+* [ENHANCEMENT] Support building on riscv64 architecture. #141
+* [ENHANCEMENT] move --upstream-force-h2c out of --insecure-listen-address. #140
+
 ## 0.11.0 / 2021-08-02
 
 * [FEATURE] Support for path patterns in --allow-paths and --ignore-paths. #135

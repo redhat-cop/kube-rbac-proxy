@@ -17,49 +17,53 @@ limitations under the License.
 package e2e
 
 import (
-	"flag"
-	"log"
-	"os"
+	"fmt"
 	"testing"
+
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/clientcmd"
 
 	"github.com/brancz/kube-rbac-proxy/test/kubetest"
 )
 
-// Sadly there's no way to pass Suite from TestMain to Test,
-// so we need this global instance
-var suite *kubetest.Suite
-
-// TestMain adds the kubeconfig flag to our tests
-func TestMain(m *testing.M) {
-	kubeconfig := flag.String(
-		"kubeconfig",
-		"",
-		"path to kubeconfig",
-	)
-	flag.Parse()
-
-	var err error
-	suite, err = kubetest.NewSuiteFromKubeconfig(*kubeconfig)
+func Test(t *testing.T) {
+	clientConfig, err := newClientConfigForTest()
 	if err != nil {
-		log.Fatal(err)
+		t.Fatalf("failed retrieving kubernetes client config: %v", err)
+	}
+	client, err := kubernetes.NewForConfig(clientConfig)
+	if err != nil {
+		t.Fatalf("failed to setup a client for the tests: %v", err)
 	}
 
-	os.Exit(m.Run())
-}
-
-func Test(t *testing.T) {
 	tests := map[string]kubetest.TestSuite{
-		"Basics":             testBasics(suite),
-		"H2CUpstream":        testH2CUpstream(suite),
-		"ClientCertificates": testClientCertificates(suite),
-		"TokenAudience":      testTokenAudience(suite),
-		"AllowPath":          testAllowPathsRegexp(suite),
-		"IgnorePath":         testIgnorePaths(suite),
-		"TLS":                testTLS(suite),
-		"StaticAuthorizer":   testStaticAuthorizer(suite),
+		"Basics":             testBasics(client),
+		"H2CUpstream":        testH2CUpstream(client),
+		"ClientCertificates": testClientCertificates(client),
+		"TokenAudience":      testTokenAudience(client),
+		"AllowPath":          testAllowPathsRegexp(client),
+		"IgnorePath":         testIgnorePaths(client),
+		"TLS":                testTLS(client),
+		"StaticAuthorizer":   testStaticAuthorizer(client),
+		"HTTP2":              testHTTP2(client),
+		"Flags":              testFlags(client),
+		"TokenMasking":       testTokenMasking(client),
 	}
 
 	for name, tc := range tests {
 		t.Run(name, tc)
 	}
+}
+
+// NewClientConfigForTest returns a config configured to connect to the api server
+func newClientConfigForTest() (*rest.Config, error) {
+	loader := clientcmd.NewDefaultClientConfigLoadingRules()
+	clientConfig := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(loader, &clientcmd.ConfigOverrides{})
+	config, err := clientConfig.ClientConfig()
+	if err == nil {
+		fmt.Printf("Found configuration for host %v.\n", config.Host)
+	}
+
+	return config, err
 }
