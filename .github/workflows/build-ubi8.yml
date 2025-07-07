@@ -61,12 +61,12 @@ jobs:
         id: set-version
         run: echo "::set-output name=version::$(cat VERSION)"
       - name: Go Build Cache
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           path: ${{ steps.go-cache-paths.outputs.go-build }}
           key: ${{ runner.os }}-go-build-${{ hashFiles('**/go.sum') }}
       - name: Go Mod Cache
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           path: ${{ steps.go-cache-paths.outputs.go-mod }}
           key: ${{ runner.os }}-go-mod-${{ hashFiles('**/go.sum') }}
@@ -104,12 +104,12 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v2
       - name: Go Build Cache
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           path: ${{ needs.setup.outputs.go_build }}
           key: ${{ runner.os }}-go-build-${{ hashFiles('**/go.sum') }}
       - name: Go Mod Cache
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           path: ${{ needs.setup.outputs.go_mod }}
           key: ${{ runner.os }}-go-mod-${{ hashFiles('**/go.sum') }}
