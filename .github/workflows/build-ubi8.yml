@@ -128,7 +128,7 @@ jobs:
         env:
           GOOS: ${{ steps.setup-build-step.outputs.platform_os }}
           GOARCH: ${{ steps.setup-build-step.outputs.platform_arch }}
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ env.ARCHIVE }}
           path: |
