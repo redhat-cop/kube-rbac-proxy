@@ -135,6 +135,9 @@ jobs:
             _output/kube-rbac-proxy-${{ env.GOOS }}-${{ env.GOARCH }}
           if-no-files-found: error
           retention-days: 1
+    outputs:
+      platform_os: ${{ steps.setup-build-step.outputs.platform_os }}
+      platform_arch: ${{ steps.setup-build-step.outputs.platform_arch }}
           
    build-image-multiarch:
     runs-on: ubuntu-latest
