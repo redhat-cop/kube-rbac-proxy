@@ -1,4 +1,4 @@
-name: (Build) - UBI8
+name: (Build) - UBI
 
 on:
   workflow_call:

@@ -1,4 +1,4 @@
-FROM registry.access.redhat.com/ubi8/ubi-minimal
+FROM registry.access.redhat.com/ubi9/ubi-minimal
 WORKDIR /
 COPY _output/kube-rbac-proxy /usr/local/bin/kube-rbac-proxy
 EXPOSE 8080
