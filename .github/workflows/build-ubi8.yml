@@ -27,39 +27,39 @@ jobs:
       - name: Setting Workflow Variables
         id: set-variables
         run: |
-          echo "::set-output name=repository_name::$(basename $GITHUB_REPOSITORY)"
+          echo "repository_name=$(basename $GITHUB_REPOSITORY)" >> $GITHUB_OUTPUT
           # Create Distribution Matrix
-          echo "::set-output name=dist_matrix::$(echo -n "${{ env.BUILD_PLATFORMS }}" | jq -csR '. | split(",")')"
+          echo "dist_matrix=$(echo -n "${{ env.BUILD_PLATFORMS }}" | jq -csR '. | split(",")')" >> $GITHUB_OUTPUT 
 
       - name: Setting Image Variables
         id: set-variables-image
         run: |
           if [ "${{ secrets.IMAGE_REPOSITORY }}" == "" ]; then
-            echo "::set-output name=image_repository_name::${{ steps.set-variables.outputs.repository_name }}"
-            echo "::set-output name=image_registry::quay.io/${{ github.repository_owner }}"
+            echo "image_repository_name=${{ steps.set-variables.outputs.repository_name }}" >> $GITHUB_OUTPUT
+            echo "image_registry=quay.io/${{ github.repository_owner }}" >> $GITHUB_OUTPUT
           else
             IMAGE_REPOSITORY="${{ secrets.IMAGE_REPOSITORY }}"
-            echo "::set-output name=image_repository_name::${IMAGE_REPOSITORY##*/}"
-            echo "::set-output name=image_registry::${IMAGE_REPOSITORY%/*}"
+            echo "image_repository_name=${IMAGE_REPOSITORY##*/}" >> $GITHUB_OUTPUT
+            echo "image_registry=${IMAGE_REPOSITORY%/*}" >> $GITHUB_OUTPUT
           fi    
       - name: Build Go Cache Paths
         id: go-cache-paths
         run: |
-          echo "::set-output name=go-build::$(go env GOCACHE)"
-          echo "::set-output name=go-mod::$(go env GOMODCACHE)"         
+          echo "go-build=$(go env GOCACHE)" >> $GITHUB_OUTPUT
+          echo "go-mod=$(go env GOMODCACHE)" >> $GITHUB_OUTPUT       
       - name: Check out code
         uses: actions/checkout@v2
       - name: Setting Go Variables
         id: set-go-variables
         run: |
-          echo "::set-output name=go_version::$(yq eval '.env.go-version' .github/workflows/build.yml)"
+          echo "go_version=$(yq eval '.env.go-version' .github/workflows/build.yml)" >> $GITHUB_OUTPUT
       - name: Set up Go 1.x
         uses: actions/setup-go@v1
         with:
           go-version: ${{ steps.set-go-variables.outputs.go_version }}
       - name: Set VERSION Variable tracking from upstream
         id: set-version
-        run: echo "::set-output name=version::$(cat VERSION)"
+        run: echo "version=$(cat VERSION)" >> $GITHUB_OUTPUT
       - name: Go Build Cache
         uses: actions/cache@v4
         with:
@@ -116,8 +116,8 @@ jobs:
       - name: Prepare Build Step
         id: setup-build-step
         run: |
-          echo "::set-output name=platform_os::$(echo ${{ matrix.platform }} |  cut -d/ -f1)"
-          echo "::set-output name=platform_arch::$(echo ${{ matrix.platform }} |  cut -d/ -f2)"
+          echo "platform_os=$(echo ${{ matrix.platform }} |  cut -d/ -f1)" >> $GITHUB_OUTPUT
+          echo "platform_arch=$(echo ${{ matrix.platform }} |  cut -d/ -f2)" >> $GITHUB_OUTPUT
       - name: Build Code
         shell: bash
         env:
