@@ -130,19 +130,21 @@ jobs:
           GOARCH: ${{ steps.setup-build-step.outputs.platform_arch }}
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.ARCHIVE }}
+          name: ${{ env.ARCHIVE }}-${{ env.GOOS }}-${{ env.GOARCH }}
           path: |
             _output/kube-rbac-proxy-${{ env.GOOS }}-${{ env.GOARCH }}
           if-no-files-found: error
-          overwrite: true
           retention-days: 1
+    outputs:
+      platform_os: ${{ steps.setup-build-step.outputs.platform_os }}
+      platform_arch: ${{ steps.setup-build-step.outputs.platform_arch }}
           
    build-image-multiarch:
     runs-on: ubuntu-latest
     name: build-image-multiarch
     needs: ["setup", "build-go"]
     env:
-      ARCHIVE: ${{ needs.setup.outputs.repository_name }}-${{ github.run_id }}-${{ github.run_number }}
+      ARCHIVE: ${{ needs.setup.outputs.repository_name }}-${{ github.run_id }}-${{ github.run_number }}-${{ needs.build-go.outputs.platform_os }}-${{ needs.build-go.outputs.platform_arch }}
       IMAGE_REPOSITORY: "${{ needs.setup.outputs.image_registry }}/${{ needs.setup.outputs.image_repository_name }}"
       IMAGE_REGISTRY: ${{ needs.setup.outputs.image_registry }}
       REPOSITORY_NAME: ${{ needs.setup.outputs.repository_name }}
@@ -152,9 +154,14 @@ jobs:
         uses: actions/checkout@v2
       - name: Download go-build Archive
         id: download-archive
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4
         with:
           name: ${{ env.ARCHIVE }}
+      - name: list
+        shell: bash
+        run: |
+          ls -lah
+          pwd
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
       - name: Set up Docker Buildx
@@ -170,6 +177,8 @@ jobs:
         with:
           build-args: |
             BINARY=${{ env.REPOSITORY_NAME }}
+            RUN_ID=${{ github.run_id }}
+            RUN_NUMBER=${{ github.run_number }}
           context: .
           file: ./.ci/Containerfile
           platforms: ${{ env.BUILD_PLATFORMS }}
