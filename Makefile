@@ -4,7 +4,7 @@ GO111MODULE=on
 export GO111MODULE
 
 PROGRAM_NAME?=kube-rbac-proxy
-GITHUB_URL=github.com/brancz/kube-rbac-proxy
+GITHUB_URL=github.com/trevorbox/kube-rbac-proxy
 GOOS?=$(shell uname -s | tr A-Z a-z)
 GOARCH?=$(shell go env GOARCH)
 BASEIMAGE?=gcr.io/distroless/static:nonroot-$(GOARCH)
@@ -12,7 +12,7 @@ OUT_DIR=_output
 VERSION?=$(shell cat VERSION)-$(shell git rev-parse --short HEAD)
 VERSION_SEMVER?=$(shell echo $(VERSION) | grep -o 'v[0-9]\+\.[0-9]\+\.[0-9]\+')
 PKGS=$(shell go list ./... | grep -v /test/e2e)
-DOCKER_REPO?=quay.io/brancz/kube-rbac-proxy
+DOCKER_REPO?=quay.io/trevorbox/kube-rbac-proxy
 KUBECONFIG?=$(HOME)/.kube/config
 CONTAINER_NAME?=$(DOCKER_REPO):$(VERSION)
 
@@ -79,11 +79,11 @@ manifest-push: manifest-tool
 push: crossbuild manifest-tool $(addprefix push-,$(ALL_ARCH)) manifest-push
 
 curl-container:
-	docker build -f ./examples/example-client/Dockerfile -t quay.io/brancz/krp-curl:v0.0.2 .
+	docker build -f ./examples/example-client/Dockerfile -t quay.io/trevorbox/krp-curl:v0.0.2 .
 
 run-curl-container:
 	@echo 'Example: curl -v -s -k -H "Authorization: Bearer `cat /var/run/secrets/kubernetes.io/serviceaccount/token`" https://kube-rbac-proxy.default.svc:8443/metrics'
-	kubectl run -i -t krp-curl --image=quay.io/brancz/krp-curl:v0.0.2 --restart=Never --command -- /bin/sh
+	kubectl run -i -t krp-curl --image=quay.io/trevorbox/krp-curl:v0.0.2 --restart=Never --command -- /bin/sh
 
 grpcc-container:
 	docker build -f ./examples/grpcc/Dockerfile -t mumoshu/grpcc:v0.0.1 .
