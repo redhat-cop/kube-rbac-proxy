@@ -177,8 +177,6 @@ jobs:
         with:
           build-args: |
             BINARY=${{ env.REPOSITORY_NAME }}
-            RUN_ID=${{ github.run_id }}
-            RUN_NUMBER=${{ github.run_number }}
           context: .
           file: ./.ci/Containerfile
           platforms: ${{ env.BUILD_PLATFORMS }}
