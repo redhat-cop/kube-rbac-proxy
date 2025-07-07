@@ -135,16 +135,16 @@ jobs:
             _output/kube-rbac-proxy-${{ env.GOOS }}-${{ env.GOARCH }}
           if-no-files-found: error
           retention-days: 1
-    outputs:
-      platform_os: ${{ steps.setup-build-step.outputs.platform_os }}
-      platform_arch: ${{ steps.setup-build-step.outputs.platform_arch }}
-          
+    # outputs:
+    #   platform_os: ${{ steps.setup-build-step.outputs.platform_os }}
+    #   platform_arch: ${{ steps.setup-build-step.outputs.platform_arch }}
+      
    build-image-multiarch:
     runs-on: ubuntu-latest
     name: build-image-multiarch
     needs: ["setup", "build-go"]
     env:
-      ARCHIVE: ${{ needs.setup.outputs.repository_name }}-${{ github.run_id }}-${{ github.run_number }}-${{ needs.build-go.outputs.platform_os }}-${{ needs.build-go.outputs.platform_arch }}
+      ARCHIVE: ${{ needs.setup.outputs.repository_name }}-${{ github.run_id }}-${{ github.run_number }}
       IMAGE_REPOSITORY: "${{ needs.setup.outputs.image_registry }}/${{ needs.setup.outputs.image_repository_name }}"
       IMAGE_REGISTRY: ${{ needs.setup.outputs.image_registry }}
       REPOSITORY_NAME: ${{ needs.setup.outputs.repository_name }}
@@ -152,6 +152,8 @@ jobs:
     steps:
       - name: Check out code
         uses: actions/checkout@v2
+      - name: list archive-ids from matrix.platform
+        run:  echo '${{ toJSON(needs.build-go.outputs) }}'
       - name: Download go-build Archive
         id: download-archive
         uses: actions/download-artifact@v4
