@@ -150,18 +150,11 @@ jobs:
     steps:
       - name: Check out code
         uses: actions/checkout@v2
-      - name: list archive-ids from matrix.platform
-        run:  echo '${{ toJSON(needs.build-go.outputs) }}'
       - name: Download go-build Archive
         id: download-archive
         uses: actions/download-artifact@v4
         with:
           pattern: ${{ env.ARCHIVE }}-*
-      - name: list
-        shell: bash
-        run: |
-          ls -lah
-          pwd
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
       - name: Set up Docker Buildx
@@ -177,6 +170,8 @@ jobs:
         with:
           build-args: |
             BINARY=${{ env.REPOSITORY_NAME }}
+            RUN_ID=${{ github.run_id }}
+            RUN_NUMBER=${{ github.run_number }}
           context: .
           file: ./.ci/Containerfile
           platforms: ${{ env.BUILD_PLATFORMS }}

@@ -1,9 +1,11 @@
-FROM registry.access.redhat.com/ubi8/ubi-minimal
+FROM registry.access.redhat.com/ubi9/ubi-minimal
 ARG TARGETOS
 ARG TARGETARCH
 ARG BINARY
+ARG RUN_ID
+ARG RUN_NUMBER
 WORKDIR /
-COPY ${BINARY}-${TARGETOS}-${TARGETARCH} /usr/local/bin/${BINARY}
+COPY ${BINARY}-${RUN_ID}-${RUN_NUMBER}-${TARGETOS}-${TARGETARCH} /usr/local/bin/${BINARY}
 RUN chgrp -R 0 /usr/local/bin && chmod -R 775 /usr/local/bin/${BINARY}
 EXPOSE 8080
 USER 65532:65532
