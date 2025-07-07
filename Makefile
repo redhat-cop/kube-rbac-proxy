@@ -4,7 +4,7 @@ GO111MODULE=on
 export GO111MODULE
 
 PROGRAM_NAME?=kube-rbac-proxy
-GITHUB_URL=github.com/trevorbox/kube-rbac-proxy
+GITHUB_URL=github.com/brancz/kube-rbac-proxy
 GOOS?=$(shell uname -s | tr A-Z a-z)
 GOARCH?=$(shell go env GOARCH)
 BASEIMAGE?=gcr.io/distroless/static:nonroot-$(GOARCH)
