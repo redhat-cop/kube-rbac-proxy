@@ -10,7 +10,7 @@ on:
         description: "Password for Registry"
         required: true
       IMAGE_REPOSITORY:
-        description: "Registry image e.g. quay.io/redhat-cop/$repoisitory-name"
+        description: "Registry image e.g. quay.io/trevorbox/$repoisitory-name"
         required: false
   push:
     tags:        

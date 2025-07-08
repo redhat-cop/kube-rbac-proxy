@@ -90,7 +90,7 @@ jobs:
     name: trigger-build
     if: ${{ needs.check-image-labels.outputs.parent-vcs-ref != needs.check-image-labels.outputs.child-vcs-ref }}
     needs: ["setup", "check-image-labels"]
-    uses: nickjordan/kube-rbac-proxy/.github/workflows/build-ubi8.yml@master
+    uses: redhat-cop/kube-rbac-proxy/.github/workflows/build-ubi.yml@master
     secrets: 
       REGISTRY_USERNAME: ${{ secrets.REGISTRY_USERNAME }}
       REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
