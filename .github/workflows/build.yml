@@ -50,15 +50,15 @@ jobs:
         go-version: ${{ env.go-version }}
     - name: Create container & run tests
       run: make test-local
-  # build:
-  #   runs-on: ubuntu-latest
-  #   name: Build
-  #   steps:
-  #   - uses: actions/checkout@v2
-  #   - uses: actions/setup-go@v2
-  #     with:
-  #       go-version: ${{ env.go-version }}
-  #   - run: make build
+  build:
+    runs-on: ubuntu-latest
+    name: Build
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-go@v2
+      with:
+        go-version: ${{ env.go-version }}
+    - run: make build
   # unit-tests:
   #   runs-on: ubuntu-latest
   #   name: Unit tests
@@ -103,8 +103,9 @@ jobs:
     - check-license
     - generate
     - build
-    - unit-tests
-    - e2e-tests
+    - test-local
+    # - unit-tests
+    # - e2e-tests
     steps:
     - name: Checkout
       uses: actions/checkout@v2
