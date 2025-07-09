@@ -3,7 +3,7 @@ on: [push, pull_request]
 env:
   QUAY_PATH: quay.io/trevorbox/kube-rbac-proxy
   go-version: '1.24'
-  kind-version: 'v0.27.0'
+  kind-version: 'v0.25.0'
 jobs:
   check-license:
     runs-on: ubuntu-latest
@@ -55,14 +55,13 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v2
     - name: Start kind & create cluster
-      uses: engineerd/setup-kind@v0.6.2
+      uses: engineerd/setup-kind@v0.5.0
       with:
         version: ${{ env.kind-version }}
         config: test/e2e/kind-config/kind-config.yaml
         wait: 300s
     - name: Wait for cluster to finish bootstraping
       run: kubectl wait --for=condition=Ready pods --all --all-namespaces --timeout=300s
-
     - name: Setup golang for make test-e2e
       uses: actions/setup-go@v2
       with:
@@ -75,14 +74,6 @@ jobs:
           echo "no kube-rbac-proxy image"
           sleep 1
         done
-        # make test-e2e
-    - name: Testing
-      run: |
-        kubectl cluster-info
-        kubectl version
-        kubectl get pods -n kube-system
-    - name: Run tests
-      run: |
         make test-e2e
   publish:
     runs-on: ubuntu-latest
