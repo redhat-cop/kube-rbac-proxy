@@ -62,6 +62,11 @@ jobs:
         wait: 300s
     - name: Wait for cluster to finish bootstraping
       run: kubectl wait --for=condition=Ready pods --all --all-namespaces --timeout=300s
+    - name: Testing
+      run: |
+        kubectl cluster-info
+        kubectl version
+        kubectl get pods -n kube-system
     - name: Setup golang for make test-e2e
       uses: actions/setup-go@v2
       with:
