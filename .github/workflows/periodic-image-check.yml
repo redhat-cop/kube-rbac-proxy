@@ -85,12 +85,24 @@ jobs:
       parent-vcs-ref: ${{ steps.set-image-label-vars.outputs.parent-vcs-ref }}
       child-vcs-ref: ${{ steps.set-image-label-vars.outputs.child-vcs-ref }}
 
+  # trigger-build:
+  #   name: trigger-build
+  #   if: ${{ needs.check-image-labels.outputs.parent-vcs-ref != needs.check-image-labels.outputs.child-vcs-ref }}
+  #   needs: ["setup", "check-image-labels"]
+  #   uses: trevorbox/kube-rbac-proxy/.github/workflows/build-ubi.yml@master
+  #   secrets: 
+  #     QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
+  #     QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
+  #     IMAGE_REPOSITORY: ${{ secrets.IMAGE_REPOSITORY }}
+
   trigger-build:
     name: trigger-build
     if: ${{ needs.check-image-labels.outputs.parent-vcs-ref != needs.check-image-labels.outputs.child-vcs-ref }}
     needs: ["setup", "check-image-labels"]
-    uses: trevorbox/kube-rbac-proxy/.github/workflows/build-ubi.yml@master
-    secrets: 
-      QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
-      QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
-      IMAGE_REPOSITORY: ${{ secrets.IMAGE_REPOSITORY }}
+    uses: trevorbox/kube-rbac-proxy/.github/workflows/build.yml@master
+    # secrets: 
+    #   QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
+    #   QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
+    #   IMAGE_REPOSITORY: ${{ secrets.IMAGE_REPOSITORY }}
+
+  
