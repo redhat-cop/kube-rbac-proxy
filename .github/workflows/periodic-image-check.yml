@@ -91,6 +91,6 @@ jobs:
     needs: ["setup", "check-image-labels"]
     uses: trevorbox/kube-rbac-proxy/.github/workflows/build-ubi.yml@master
     secrets: 
-      REGISTRY_USERNAME: ${{ secrets.QUAY_USERNAME }}
-      REGISTRY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
+      QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
+      QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
       IMAGE_REPOSITORY: ${{ secrets.IMAGE_REPOSITORY }}

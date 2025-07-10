@@ -3,10 +3,10 @@ name: (Build) - UBI
 on:
   workflow_call:
     secrets:
-      REGISTRY_USERNAME:
+      QUAY_USERNAME:
         description: "Username for Registry"
         required: true
-      REGISTRY_PASSWORD:
+      QUAY_PASSWORD:
         description: "Password for Registry"
         required: true
       IMAGE_REPOSITORY:
