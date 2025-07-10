@@ -17,26 +17,26 @@ jobs:
       - name: Setting Workflow Variables
         id: set-variables
         run: |
-          echo "::set-output name=repository_name::$(basename $GITHUB_REPOSITORY)"
+          echo "repository_name=$(basename $GITHUB_REPOSITORY)" >> $GITHUB_OUTPUT
           # Create Distribution Matrix
-          echo "::set-output name=dist_matrix::$(echo -n "${{ env.BUILD_PLATFORMS }}" | jq -csR '. | split(",")')"
-          echo "::set-output name=upstream_image::$(grep -oP '(?<=FROM ).*' ./.ci/Containerfile)"
-          echo "::set-output name=downstream_image::${{ env.IMAGE_REPOSITORY }}:${{ env.VERSION }}"
+          echo "dist_matrix=$(echo -n "${{ env.BUILD_PLATFORMS }}" | jq -csR '. | split(",")')" >> $GITHUB_OUTPUT
+          echo "upstream_image=$(grep -oP '(?<=FROM ).*' ./.ci/Containerfile)" >> $GITHUB_OUTPUT
+          echo "downstream_image=${{ env.IMAGE_REPOSITORY }}:${{ env.VERSION }})" >> $GITHUB_OUTPUT
 
       - name: Setting Image Variables
         id: set-variables-image
         run: |
           if [ "${{ secrets.IMAGE_REPOSITORY }}" == "" ]; then
-            echo "::set-output name=image_repository_name::${{ steps.set-variables.outputs.repository_name }}"
-            echo "::set-output name=image_registry::quay.io/${{ github.repository_owner }}"
+            echo "image_repository_name=${{ steps.set-variables.outputs.repository_name }}" >> $GITHUB_OUTPUT
+            echo "image_registry=quay.io/${{ github.repository_owner }}" >> $GITHUB_OUTPUT
           else
             IMAGE_REPOSITORY="${{ secrets.IMAGE_REPOSITORY }}"
-            echo "::set-output name=image_repository_name::${IMAGE_REPOSITORY##*/}"
-            echo "::set-output name=image_registry::${IMAGE_REPOSITORY%/*}"
-          fi       
+            echo "image_repository_name=${IMAGE_REPOSITORY##*/}" >> $GITHUB_OUTPUT
+            echo "image_registry=${IMAGE_REPOSITORY%/*}" >> $GITHUB_OUTPUT
+          fi
       - name: Set VERSION Variable tracking from upstream
         id: set-version
-        run: echo "::set-output name=version::$(cat VERSION)"
+        run: echo "version=$(cat VERSION)" >> $GITHUB_OUTPUT
     outputs:
       repository_name: ${{ steps.set-variables.outputs.repository_name }}
       image_repository_name: ${{ steps.set-variables-image.outputs.image_repository_name}}
@@ -65,8 +65,8 @@ jobs:
       - name: Prepare Image Label Lookup Step
         id: setup-image-label-lookup
         run: |
-          echo "::set-output name=platform_os::$(echo ${{ matrix.platform }} |  cut -d/ -f1)"
-          echo "::set-output name=platform_arch::$(echo ${{ matrix.platform }} |  cut -d/ -f2)"
+          echo "platform_os=$(echo ${{ matrix.platform }} |  cut -d/ -f1)" >> $GITHUB_OUTPUT
+          echo "platform_arch=$(echo ${{ matrix.platform }} |  cut -d/ -f2)" >> $GITHUB_OUTPUT
       - name: Login to Registry
         uses: redhat-actions/podman-login@v1
         with:
@@ -79,9 +79,8 @@ jobs:
           OS: ${{ steps.setup-image-label-lookup.outputs.platform_os }}
           ARCH: ${{ steps.setup-image-label-lookup.outputs.platform_arch }}
         run: |
-          echo "::set-output name=parent-vcs-ref::$(skopeo inspect --override-os=${{ env.OS }} --override-arch=${{ env.ARCH }} docker://${{ env.UPSTREAM_IMAGE }} | jq '.Labels["vcs-ref"]')"
-          echo "::set-output name=child-vcs-ref::$(skopeo inspect --override-os=${{ env.OS }} --override-arch=${{ env.ARCH }} docker://${{ env.IMAGE_REPOSITORY }}:${{ env.VERSION }} | jq '.Labels["vcs-ref"]')"
-          
+          echo "parent-vcs-ref=$(skopeo inspect --override-os=${{ env.OS }} --override-arch=${{ env.ARCH }} docker://${{ env.UPSTREAM_IMAGE }} | jq '.Labels["vcs-ref"]')" >> $GITHUB_OUTPUT
+          echo "child-vcs-ref=$(skopeo inspect --override-os=${{ env.OS }} --override-arch=${{ env.ARCH }} docker://${{ env.IMAGE_REPOSITORY }}:${{ env.VERSION }} | jq '.Labels["vcs-ref"]')" >> $GITHUB_OUTPUT
     outputs:
       parent-vcs-ref: ${{ steps.set-image-label-vars.outputs.parent-vcs-ref }}
       child-vcs-ref: ${{ steps.set-image-label-vars.outputs.child-vcs-ref }}
