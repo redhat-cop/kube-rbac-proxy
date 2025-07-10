@@ -3,7 +3,6 @@ name: (Periodic) - Base Image Update Check
 on:
   schedule:
     - cron: '0 0 * * *'
-  workflow_dispatch:
 
 env:
   BUILD_PLATFORMS: "linux/amd64,linux/arm64,linux/ppc64le,linux/s390x"
