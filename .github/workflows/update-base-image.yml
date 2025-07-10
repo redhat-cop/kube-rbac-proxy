@@ -28,8 +28,8 @@ jobs:
         # if: ${{ steps.release-label.outputs.level != null }}
         with:
           semver_only: false
-          with_initial_version: true
-          initial_version: v0.0.0-0
+          # with_initial_version: true
+          # initial_version: v0.0.0-0
       
       - name: Current version
         run: echo "${{ steps.get-latest-tag.outputs.tag }}"
@@ -40,7 +40,7 @@ jobs:
         with:
           current_version: ${{ steps.get-latest-tag.outputs.tag }}
           # level: ${{ steps.release-label.outputs.level }}
-          level: prepatch
+          level: prerelease
       
       - name: Next version
         run: echo "${{ steps.bump-semver.outputs.new_version }}"
