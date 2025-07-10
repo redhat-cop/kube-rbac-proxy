@@ -70,8 +70,8 @@ jobs:
       - name: Login to Registry
         uses: redhat-actions/podman-login@v1
         with:
-          username: ${{ secrets.REGISTRY_USERNAME }}
-          password: ${{ secrets.REGISTRY_PASSWORD }}
+          username: ${{ secrets.QUAY_USERNAME }}
+          password: ${{ secrets.QUAY_PASSWORD }}
           registry: ${{ env.IMAGE_REGISTRY }} 
       - name: Get Image Labels
         id: set-image-label-vars
@@ -91,6 +91,6 @@ jobs:
     needs: ["setup", "check-image-labels"]
     uses: trevorbox/kube-rbac-proxy/.github/workflows/build-ubi.yml@master
     secrets: 
-      REGISTRY_USERNAME: ${{ secrets.REGISTRY_USERNAME }}
-      REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
+      REGISTRY_USERNAME: ${{ secrets.QUAY_USERNAME }}
+      REGISTRY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
       IMAGE_REPOSITORY: ${{ secrets.IMAGE_REPOSITORY }}
