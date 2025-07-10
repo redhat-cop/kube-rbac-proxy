@@ -27,7 +27,9 @@ jobs:
         id: get-latest-tag
         # if: ${{ steps.release-label.outputs.level != null }}
         with:
-          semver_only: true
+          semver_only: false
+          with_initial_version: true
+          initial_version: v0.0.0-0
       
       - name: Current version
         run: echo "${{ steps.get-latest-tag.outputs.tag }}"
