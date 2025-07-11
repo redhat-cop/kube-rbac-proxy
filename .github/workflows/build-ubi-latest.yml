@@ -102,7 +102,7 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     name: Publish container image to Quay
-    if: github.event_name == 'push'
+    if: ${{ github.event_name == 'push' || github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call' }}
     needs:
     - check-license
     - generate
