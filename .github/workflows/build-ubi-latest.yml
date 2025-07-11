@@ -28,6 +28,8 @@ env:
   BASEIMAGE: registry.access.redhat.com/ubi9/ubi-minimal:latest
   go-version: '1.24'
   kind-version: 'v0.25.0'
+  VERSION_OVERRIDE: ${{ inputs.VERSION_OVERRIDE }}
+  TAG_LATEST: ${{ inputs.TAG_LATEST }}
 jobs:
   check-license:
     runs-on: ubuntu-latest
