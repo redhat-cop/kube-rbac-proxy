@@ -34,10 +34,15 @@ jobs:
             echo "image_repository_name=${IMAGE_REPOSITORY##*/}" >> $GITHUB_OUTPUT
             echo "image_registry=${IMAGE_REPOSITORY%/*}" >> $GITHUB_OUTPUT
           fi
+      - name: Version File Semver
+        id: version-file-semver
+        run: echo "version=$(cat VERSION)" >> $GITHUB_OUTPUT
       - uses: actions-ecosystem/action-get-latest-tag@v1
         id: get-latest-tag
         with:
-          semver_only: false      
+          semver_only: false
+          initial_version: ${{ steps.version-file-semver.outputs.version }}
+          with_initial_version: true
       - name: Latest version
         id: latest-version
         run: |
