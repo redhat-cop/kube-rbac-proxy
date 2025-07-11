@@ -24,6 +24,7 @@ on:
   pull_request:
 env:
   QUAY_PATH: quay.io/trevorbox/kube-rbac-proxy
+  BASEIMAGE: registry.access.redhat.com/ubi9/ubi-minimal:latest
   go-version: '1.24'
   kind-version: 'v0.25.0'
 jobs:

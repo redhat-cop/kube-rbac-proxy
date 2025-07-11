@@ -7,12 +7,12 @@ PROGRAM_NAME?=kube-rbac-proxy
 GITHUB_URL=github.com/brancz/kube-rbac-proxy
 GOOS?=$(shell uname -s | tr A-Z a-z)
 GOARCH?=$(shell go env GOARCH)
-BASEIMAGE?=registry.access.redhat.com/ubi9/ubi-minimal:latest
+BASEIMAGE?=gcr.io/distroless/static:nonroot-$(GOARCH)
 OUT_DIR=_output
 VERSION?=$(shell cat VERSION)-$(shell git rev-parse --short HEAD)
 VERSION_SEMVER?=$(shell echo $(VERSION) | grep -o 'v[0-9]\+\.[0-9]\+\.[0-9]\+')
 PKGS=$(shell go list ./... | grep -v /test/e2e)
-DOCKER_REPO?=quay.io/trevorbox/kube-rbac-proxy
+DOCKER_REPO?=quay.io/brancz/kube-rbac-proxy
 KUBECONFIG?=$(HOME)/.kube/config
 CONTAINER_NAME?=$(DOCKER_REPO):$(VERSION)
 
