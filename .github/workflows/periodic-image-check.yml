@@ -1,4 +1,4 @@
-name: (Periodic) - Base Image Update Check
+name: Periodic Base Image Check
 
 on:
   schedule:
@@ -6,8 +6,9 @@ on:
   workflow_dispatch:
 
 env:
-  BUILD_PLATFORMS: "linux/amd64,linux/arm64,linux/ppc64le,linux/s390x"
-  
+  BUILD_PLATFORMS: "linux/amd64,linux/arm64,linux/arm,linux/ppc64le,linux/s390x"
+  BASEIMAGE: "registry.access.redhat.com/ubi9/ubi-minimal:latest"
+
 jobs:
   setup:
     runs-on: ubuntu-latest
@@ -20,7 +21,7 @@ jobs:
           echo "repository_name=$(basename $GITHUB_REPOSITORY)" >> $GITHUB_OUTPUT
           # Create Distribution Matrix
           echo "dist_matrix=$(echo -n "${{ env.BUILD_PLATFORMS }}" | jq -csR '. | split(",")')" >> $GITHUB_OUTPUT
-          echo "upstream_image=$(grep -oP '(?<=FROM ).*' ./.ci/Containerfile)" >> $GITHUB_OUTPUT
+          echo "upstream_image=${{ env.BASEIMAGE }}" >> $GITHUB_OUTPUT
           echo "downstream_image=${{ env.IMAGE_REPOSITORY }}:${{ env.VERSION }})" >> $GITHUB_OUTPUT
 
       - name: Setting Image Variables
@@ -34,9 +35,28 @@ jobs:
             echo "image_repository_name=${IMAGE_REPOSITORY##*/}" >> $GITHUB_OUTPUT
             echo "image_registry=${IMAGE_REPOSITORY%/*}" >> $GITHUB_OUTPUT
           fi
-      - name: Set VERSION Variable tracking from upstream
-        id: set-version
+      - name: Version File Semver
+        id: version-file-semver
         run: echo "version=$(cat VERSION)" >> $GITHUB_OUTPUT
+      - uses: actions-ecosystem/action-get-latest-tag@v1
+        id: get-latest-tag
+        with:
+          semver_only: false
+          initial_version: ${{ steps.version-file-semver.outputs.version }}
+          with_initial_version: true
+      - name: Latest version
+        id: latest-version
+        run: |
+          echo "version=${{ steps.get-latest-tag.outputs.tag }}" >> $GITHUB_OUTPUT
+      - uses: actions-ecosystem/action-bump-semver@v1
+        id: bump-semver
+        with:
+          current_version: ${{ steps.get-latest-tag.outputs.tag }}
+          level: prerelease      
+      - name: Next version
+        id: next-version
+        run: |
+          echo "version=${{ steps.bump-semver.outputs.new_version }}" >> $GITHUB_OUTPUT
     outputs:
       repository_name: ${{ steps.set-variables.outputs.repository_name }}
       image_repository_name: ${{ steps.set-variables-image.outputs.image_repository_name}}
@@ -44,7 +64,8 @@ jobs:
       upstream_image: ${{ steps.set-variables.outputs.upstream_image }}
       downstream_image: ${{ steps.set-variables.outputs.downstream_image }}
       image_registry: ${{ steps.set-variables-image.outputs.image_registry }}
-      version: ${{ steps.set-version.outputs.version}}
+      latest_version: ${{ steps.latest-version.outputs.version}}
+      next_version: ${{ steps.next-version.outputs.version}}
 
   check-image-labels:
     runs-on: ubuntu-latest
@@ -59,8 +80,7 @@ jobs:
       DOWNSTREAM_IMAGE: ${{ needs.setup.outputs.downstream_image }}
       IMAGE_REGISTRY: ${{ needs.setup.outputs.image_registry }}
       IMAGE_REPOSITORY: "${{ needs.setup.outputs.image_registry }}/${{ needs.setup.outputs.image_repository_name }}"
-      VERSION: ${{ needs.setup.outputs.version }}
-
+      LATEST_VERSION: ${{ needs.setup.outputs.latest_version }}
     steps:
       - name: Prepare Image Label Lookup Step
         id: setup-image-label-lookup
@@ -80,7 +100,7 @@ jobs:
           ARCH: ${{ steps.setup-image-label-lookup.outputs.platform_arch }}
         run: |
           echo "parent-vcs-ref=$(skopeo inspect --override-os=${{ env.OS }} --override-arch=${{ env.ARCH }} docker://${{ env.UPSTREAM_IMAGE }} | jq '.Labels["vcs-ref"]')" >> $GITHUB_OUTPUT
-          echo "child-vcs-ref=$(skopeo inspect --override-os=${{ env.OS }} --override-arch=${{ env.ARCH }} docker://${{ env.IMAGE_REPOSITORY }}:${{ env.VERSION }} | jq '.Labels["vcs-ref"]')" >> $GITHUB_OUTPUT
+          echo "child-vcs-ref=$(skopeo inspect --override-os=${{ env.OS }} --override-arch=${{ env.ARCH }} docker://${{ env.IMAGE_REPOSITORY }}:${{ env.LATEST_VERSION }} | jq '.Labels["vcs-ref"]')" >> $GITHUB_OUTPUT
     outputs:
       parent-vcs-ref: ${{ steps.set-image-label-vars.outputs.parent-vcs-ref }}
       child-vcs-ref: ${{ steps.set-image-label-vars.outputs.child-vcs-ref }}
@@ -89,7 +109,10 @@ jobs:
     name: trigger-build
     if: ${{ needs.check-image-labels.outputs.parent-vcs-ref != needs.check-image-labels.outputs.child-vcs-ref }}
     needs: ["setup", "check-image-labels"]
-    uses: trevorbox/kube-rbac-proxy/.github/workflows/build-ubi.yml@master
+    uses: redhat-cop/kube-rbac-proxy/.github/workflows/build-ubi.yml@master
+    with:
+      VERSION_OVERRIDE: ${{ needs.setup.outputs.next_version }}
+      TAG_LATEST: true
     secrets: 
       QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
       QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
