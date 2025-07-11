@@ -101,7 +101,7 @@ jobs:
 
   trigger-build:
     name: trigger-build
-    if: ${{ needs.check-image-labels.outputs.parent-vcs-ref != needs.check-image-labels.outputs.child-vcs-ref }}
+    # if: ${{ needs.check-image-labels.outputs.parent-vcs-ref != needs.check-image-labels.outputs.child-vcs-ref }}
     needs: ["setup", "check-image-labels"]
     uses: trevorbox/kube-rbac-proxy/.github/workflows/build-ubi-latest.yml@master
     with:
